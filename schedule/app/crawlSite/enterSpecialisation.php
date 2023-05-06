@@ -1,7 +1,6 @@
 <?php
 ini_set('max_execution_time', 1000);
 
-use App\CrawlSite\customEncoder;
 
 $url_scraper = new URLScraper();
 $urls = $url_scraper->getAllURLs();
@@ -23,13 +22,11 @@ foreach ($urls as $url) {
 
         $query_string = parse_url($url, PHP_URL_QUERY);
         parse_str($query_string, $params);
-        $encode = new customEncoder();
         $specialisation = $params['specjalnosc'] ?? "ERROR: no specialisation";
-        $specialisation = utf8_encode($specialisation);
 
         $stationary = ($specialisation[0] === 'n') ? false : true;
         $year = $specialisation[1];
-        $specialisation_only = $encode->customEncode(substr($specialisation, 2));
+        $specialisation_only = mb_convert_encoding(substr($specialisation, 2), 'UTF-8', 'ISO-8859-2');
 
         $schedule_page = file_get_contents($url);
         $schedule_domdoc = new DOMDocument();
@@ -45,7 +42,7 @@ foreach ($urls as $url) {
         $current_column = '';
         foreach ($tds as $td) {
 
-            $current_column = str_replace($encode->customEncode($specialisation), '', $td->nodeValue);
+            $current_column = str_replace(mb_convert_encoding($specialisation, 'UTF-8', 'ISO-8859-2'), '', $td->nodeValue);
             if (in_array($current_column, $column_names)) continue;
             $column_names[] = $current_column;
 //            file_put_contents("groups.txt", $current_column . "  " . $specialisation . "  " . $url . "\n", FILE_APPEND);
@@ -86,7 +83,7 @@ foreach ($urls as $url) {
             $name = 'example_specialisation'; // replace with the actual value
         }
 
-        $name = $encode->customEncode($name);
+        $name = mb_convert_encoding($name, 'UTF-8', 'ISO-8859-2');
 
 
         foreach ($column_names as $group) {

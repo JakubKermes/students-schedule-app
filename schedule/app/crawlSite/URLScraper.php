@@ -2,54 +2,86 @@
 
 namespace App\CrawlSite;
 
-use Symfony\Component\DomCrawler\Crawler;
+use DOMDocument;
+use DOMXPath;
 
 class URLScraper
 {
-    private $base_url;
-    private $urls;
+    private $url;
 
-    public function __construct()
+    public function __construct($url)
     {
-        $this->base_url = 'http://www.plan.pwsz.legnica.edu.pl/';
-        $this->urls = [
-            '',
-            'schedule_view.php?site=show_kierunek.php&id=7',
-            'schedule_view.php?site=show_kierunek.php&id=1',
-            'schedule_view.php?site=show_kierunek.php&id=2',
-            'schedule_view.php?site=show_kierunek.php&id=11',
-            'schedule_view.php?site=show_kierunek.php&id=10',
-        ];
+        $this->url = $url;
     }
 
-    public function getAllURLs()
+    public function fetch_content($url)
     {
-        $data = [];
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        $content = curl_exec($ch);
+        curl_close($ch);
+        return $content;
+    }
 
-        foreach ($this->urls as $url) {
-            $full_url = $this->base_url . $url;
+    public function extract_links($html)
+    {
+        $dom = new DOMDocument();
+        @$dom->loadHTML($html);
+        $xpath = new DOMXPath($dom);
 
-            $query = parse_url($full_url, PHP_URL_QUERY);
-            parse_str($query, $params);
-            $id_faculty = $params['id'] ?? 0;
-            $data[] = 'id_faculty=' . $id_faculty;
+        $links = array();
+        $elements = $xpath->query("//a/@href");
 
-            $grab = file_get_contents($full_url);
-            $crawler = new Crawler($grab);
+        foreach ($elements as $element) {
+            $links[] = $element->nodeValue;
+        }
 
-            foreach ($crawler->filter('a') as $link) {
-                $linkUrl = $link->getAttribute('href');
-                if (strpos($linkUrl, 'PO?')) {
-                    $linkUrl = str_ireplace('PO?', 'PO%A3', $linkUrl);
-                }
-                if (strpos($linkUrl, 'E?O')) {
-                    $linkUrl = str_ireplace('E?O', 'E%ACO', $linkUrl);
-                }
-                $full_link = $this->base_url . $linkUrl;
-                $data[] = $full_link;
+        return $links;
+    }
+
+    public function scrape()
+    {
+        $allURLs = array();
+        $data = array();
+
+        $html_content = $this->fetch_content($this->url);
+        $links = $this->extract_links($html_content);
+
+        for ($i = 0; $i < count($links); $i++) {
+            $links[$i] = $this->url . $links[$i];
+        }
+
+        foreach ($links as $link) {
+            $html_content = $this->fetch_content($link);
+            $allURLs = $this->extract_links($html_content);
+            foreach ($allURLs as $scrapedURL) {
+                $data[] = $scrapedURL;
             }
         }
 
         return $data;
     }
+
+
+    function getAllURLs()
+    {
+        $url = 'http://www.plan.collegiumwitelona.pl/';
+        $scraper = new URLScraper($url);
+        $data = $scraper->scrape();
+
+        for ($i = 0; $i < count($data); $i++) {
+            $data[$i] = $url . $data[$i];
+            if (strpos($data[$i], '£')) {
+                $data[$i] = str_replace('£', '%A3', $data[$i]);
+            }
+            if (strpos($data[$i], '¬')) {
+                $data[$i] = str_replace('¬', '%AC', $data[$i]);
+            }
+        }
+        return $data;
+    }
 }
+
+?>

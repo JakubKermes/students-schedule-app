@@ -610,6 +610,7 @@ class ComposerStaticInit86523569316892b9f77690ca0eed16bb
 
     public static $classMap = array (
         'App\\Console\\Kernel' => __DIR__ . '/../..' . '/app/Console/Kernel.php',
+        'App\\CrawlSite\\URLScraper' => __DIR__ . '/../..' . '/app/crawlSite/URLScraper.php',
         'App\\CrawlSite\\customEncoder' => __DIR__ . '/../..' . '/app/crawlSite/customEncoder.php',
         'App\\Exceptions\\Handler' => __DIR__ . '/../..' . '/app/Exceptions/Handler.php',
         'App\\Http\\Controllers\\Auth\\AuthenticatedSessionController' => __DIR__ . '/../..' . '/app/Http/Controllers/Auth/AuthenticatedSessionController.php',

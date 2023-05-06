@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\StudentGroupSelectionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,6 +47,22 @@ Route::get('/enter_specialisation', function () {
 Route::get('/scrap_schedule', function () {
     require_once app_path('crawlSite/scrapSchedule.php');
 });
+Route::get('/get_lecturers', function () {
+    require_once app_path('crawlSite/updateLecturersAtCollegium.php');
+});
+Route::get('/all', function () {
+    require_once app_path('crawlSite/URLScraper.php');
+});
+
+Route::get('/get_faculties', [StudentGroupSelectionController::class, 'getFaculties']);
+Route::get('/get_fos/{id_faculty}', [StudentGroupSelectionController::class, 'getFOS']);
+Route::get('/get_year/{id_faculty}/{fos}', [StudentGroupSelectionController::class, 'getYear']);
+Route::get('/get_specialisation/{id_faculty}/{fos}/{year}', [StudentGroupSelectionController::class, 'getSpecialisation']);
+Route::get('/get_stationary/{id_faculty}/{fos}/{year}/{specialisation}', [StudentGroupSelectionController::class, 'getStationary']);
+Route::get('/get_spec_group/{id_faculty}/{fos}/{year}/{specialisation}/{stationary}', [StudentGroupSelectionController::class, 'getSpecGroup']);
+Route::get('/get_group/{id_faculty}/{fos}/{year}/{specialisation}/{spec_group}/{stationary}', [StudentGroupSelectionController::class, 'getGroup']);
+
+Route::get('/get_schedule/{id_group}', [App\Http\Controllers\ScheduleController::class, 'getSchedule']);
 
 
 require __DIR__.'/auth.php';

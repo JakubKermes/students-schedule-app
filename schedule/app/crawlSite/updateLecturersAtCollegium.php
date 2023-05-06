@@ -1,4 +1,6 @@
 <?php
+ini_set('max_execution_time', 1000);
+use App\CrawlSite\URLScraper;
 
 
 // Create a MySQL connection
@@ -9,18 +11,13 @@ if ($conn->connect_error) {
   die("Connection failed: " . $conn->connect_error);
 }
 
-// Read the URLs from the file
-$file = fopen("teachersURLs.txt", "r");
 $urls = array();
-while (!feof($file)) {
-  $line = trim(fgets($file));
-  if (!empty($line)) {
-    $urls[] = $line;
-  }
-}
-fclose($file);
+$scraper = new URLScraper();
+$urls = $scraper->getAllURLs();
+
 
 foreach ($urls as $url) {
+    echo $url . PHP_EOL;
   if (strpos($url, "checkNauczycielWszys") !== false) {
 
     // Send a GET request to the URL
@@ -40,29 +37,27 @@ foreach ($urls as $url) {
       $h2_tag = $h2_tag->nextSibling;
     }
     $teacher_name = trim($h2_tag->textContent);
+
     $parsed_url = parse_url($url);
     parse_str($parsed_url['query'], $params);
+
     $teacher_id = $params['pracownik'];
-    $name_split = explode(" ", $teacher_name);
+    $faculty_id = $params['wydzial'];
 
-    if (count($name_split) >= 2 && $name_split[count($name_split)-1] && $name_split[count($name_split)-2]) {
+    $nameCleaner = new \App\CrawlSite\NameCleaner();
+    $lecturer_name = $nameCleaner->clean($teacher_name);
 
-      $query = "UPDATE lecturers SET id_at_collegiumwitelona = " . $teacher_id . " WHERE name = '" . $name_split[count($name_split)-2] . "' AND lastname = '" . $name_split[count($name_split)-1] . "'";
-     echo $query . "\n";
-      // $conn->query($query);
-
-      // Check if the update was successful
-    //  if ($conn->affected_rows > 0) {
-   //     echo $name_split[count($name_split)-1] . "\n";
-   //   }
+//      $query = "UPDATE lecturers SET id_at_collegiumwitelona = " . $teacher_id . " WHERE name = '" . $name_split[count($name_split)-2] . "' AND lastname = '" . $name_split[count($name_split)-1] . "'";
+      $query = "INSERT INTO lecturers (name, lastname, title, id_at_collegiumwitelona, faculty)
+                VALUES ('{$lecturer_name['name']}', '{$lecturer_name['lastname']}', '{$lecturer_name['title']}', '{$teacher_id}',
+                (SELECT id_faculty FROM faculties WHERE id_at_collegiumwitelona = '{$faculty_id}'));";
+      //      $conn->query($query);
+    echo $query . '<br>';
     }
-  }
+
 }
 
 // Close the MySQL connection
 $conn->close();
-
-echo "Press any key to exit.";
-fgets(STDIN);
 
 ?>

@@ -4,9 +4,10 @@ ini_set('max_execution_time', 1000);
 
 use App\CrawlSite\URLScraper;
 
+
 $sql = new mysqli(env('DB_HOST'), env('DB_USERNAME'), env('DB_PASSWORD'), env('DB_DATABASE'));
 
-$scraper = new URLScraper();
+$scraper = new URLScraper('http://www.plan.collegiumwitelona.pl/');
 $urls = $scraper->getAllURLs();
 
 foreach ($urls as $url) {
@@ -129,7 +130,7 @@ foreach ($urls as $url) {
                           '{$event['time_end']}'
                     )";
 
-                    $sql->query($query);
+//                    $sql->query($query);
                     echo $query . PHP_EOL;
                 }
             }
@@ -246,6 +247,7 @@ function clearName($name)
 {
 
     $name_array = explode(' ', $name);
+    $titles_array = array();
 
 
     $titles = ['dr', 'hab', 'hab.', 'inż.', 'mgr', 'prof.', 'lic', 'lek.', 'lek', 'med', 'med.', 'n.', 'mgr.', 'dent.', 'dent'];
@@ -253,6 +255,7 @@ function clearName($name)
     foreach ($titles as $title) {
         if (in_array($title, $name_array)) {
             $key = array_search($title, $name_array);
+            $titles_array[] = $name_array[$key];
             unset($name_array[$key]);
         }
     }
@@ -263,8 +266,10 @@ function clearName($name)
     $first_name = $name_array[0];
     unset($name_array[0]);
     $last_name = implode(' ', $name_array);
+    $actual_titles = implode(' ', $titles_array);
 
     return [
+        'actual_titles' => $actual_titles,
         'first_name' => $first_name,
         'last_name' => $last_name,
     ];
