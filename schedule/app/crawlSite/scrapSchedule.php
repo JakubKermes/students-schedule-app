@@ -3,9 +3,13 @@
 ini_set('max_execution_time', 1000);
 
 use App\CrawlSite\URLScraper;
+use App\Models\AbbreviationFullName;
+use App\Models\Classroom;
+use App\Models\Lecturer;
+use App\Models\LectureSchedule;
+use App\Models\Legend;
+use App\Models\StudentGroup;
 
-
-$sql = new mysqli(env('DB_HOST'), env('DB_USERNAME'), env('DB_PASSWORD'), env('DB_DATABASE'));
 
 $scraper = new URLScraper('http://www.plan.collegiumwitelona.pl/');
 $urls = $scraper->getAllURLs();
@@ -81,11 +85,20 @@ foreach ($urls as $url) {
 
                     $lecturer_name = clearName($test[1]);
 
-                    $result = $sql->query("SELECT COUNT(id_room) FROM `classrooms` WHERE (room_number = '{$classroom}' AND building = '{$building}')");
-                    $classroom_count = $result->fetch_row()[0];
+                    $classroom_count = Classroom::where('room_number', $classroom)
+                        ->where('building', $building)
+                        ->count();
 
                     if ($classroom_count === 0) {
-                        $sql->query("INSERT INTO `classrooms` (`building`) VALUES ('$test2[0]')");
+                        $existing_classroom = Classroom::where('building', $test2[0])
+                            ->first();
+                        if (!$existing_classroom) {
+                            Classroom::factory()->create([
+                                'building' => $test2[0],
+                                'room_number' => '',
+                            ]);
+
+                        }
                         $building = $test2[0];
                         $classroom = '';
                     }
@@ -100,7 +113,6 @@ foreach ($urls as $url) {
                         'date' => $date,
                         'time_start' => $time_start,
                         'time_end' => $time_end,
-                        'specialisation' => $nazwaSpecjalnosci[$i],
                         'subject' => $test[0],
                         'lecturer_name' => $lecturer_name['first_name'],
                         'lecturer_lastname' => $lecturer_name['last_name'],
@@ -115,23 +127,44 @@ foreach ($urls as $url) {
                     $test = array_slice($test, 2);
                     $test2 = array_slice($test2, 1);
 
-                    if($event['lecturer_name'] === '-' || $event['lecturer_lastname'] === '-') {
+                    if ($event['lecturer_name'] === '-' || $event['lecturer_lastname'] === '-') {
                         continue;
                     }
 
-                    $query = "INSERT IGNORE INTO lecture_schedule
-                    (id_lecturer, id_group, id_room, type, time_start, time_end)
-                    VALUES (
-                          (SELECT id_lecturer FROM lecturers WHERE name = '{$event['lecturer_name']}' AND lastname = '{$event['lecturer_lastname']}'),
-                          (SELECT id_group FROM student_groups WHERE stationary = '{$event['stationary']}' AND specialisation = '{$event['specialisation']}' AND spec_group = '{$event['group']}'),
-                          (SELECT id_room FROM classrooms WHERE room_number = '{$event['classroom']}' AND building = '{$event['building']}'),
-                          '{$event['type']}',
-                          '{$event['time_start']}',
-                          '{$event['time_end']}'
-                    )";
+                    $existing_lecture_schedule = LectureSchedule::where('time_start', $event['time_start'])
+                        ->where('time_end', $event['time_end'])
+                        ->where('id_lecturer', Lecturer::where('name', $event['lecturer_name'])
+                            ->where('lastname', $event['lecturer_lastname'])
+                            ->first()->id_lecturer)
+                        ->where('id_group', StudentGroup::where('stationary', $event['stationary'])
+                            ->where('specialisation', $event['specialisation'])
+                            ->where('spec_group', $event['group'])
+                            ->first()->id_group)
+                        ->where('id_room', Classroom::where('building', $event['building'])
+                            ->where('room_number', $event['classroom'])
+                            ->first()->id_room)
+                        ->where('type', $event['type'])
+                        ->first();
 
-//                    $sql->query($query);
-                    echo $query . PHP_EOL;
+                    if (!$existing_lecture_schedule) {
+                        LectureSchedule::factory()->create([
+                            'id_lecturer' => Lecturer::where('name', $event['lecturer_name'])
+                                ->where('lastname', $event['lecturer_lastname'])
+                                ->first()->id_lecturer,
+                            'id_group' => StudentGroup::where('stationary', $event['stationary'])
+                                ->where('specialisation', $event['specialisation'])
+                                ->where('spec_group', $event['group'])
+                                ->first()->id_group,
+                            'id_room' => Classroom::where('building', $event['building'])
+                                ->where('room_number', $event['classroom'])
+                                ->first()->id_room,
+                            'subject' => $event['subject'],
+                            'type' => $event['type'],
+                            'time_start' => $event['time_start'],
+                            'time_end' => $event['time_end'],
+                        ]);
+                    }
+
                 }
             }
         }
@@ -169,36 +202,25 @@ function getLegends($table, $specialisation)
         }
     }
 
-    $sql = new mysqli(env('DB_HOST'), env('DB_USERNAME'), env('DB_PASSWORD'), env('DB_DATABASE'));
 
-    $group_ids = $sql->query("SELECT 'group_id' FROM `student_groups` WHERE `specialisation` = '$specialisation_only' AND `stationary` = '$stationary' AND `year` = '$year'");
-
+    $group_ids = StudentGroup::where('specialisation', $specialisation_only)
+        ->where('stationary', $stationary)
+        ->where('year', $year)
+        ->get('id_group');
     foreach ($group_ids as $group_id) {
         foreach ($legends as $legend) {
-            $query = "INSERT IGNORE INTO `legends` (
-    `legend_name`,
-    `id_group`,
-    `id_lecturer`,
-    `id_room`,
-    `subject_name`
-) VALUES (
-    '{$legend['Legend']}',
-    '{$group_id['group_id']}',
-    (
-        SELECT id_lecturer
-        FROM lecturers
-        WHERE name = '{$legend['lecturer_firstname']}'
-        AND lastname = '{$legend['lecturer_lastname']}'
-    ),
-    (
-        SELECT id_room
-        FROM classrooms
-        WHERE room_number = '{$legend['room_number']}'
-        AND building = '{$legend['buiding']}'
-    ),
-    '{$legend['subject']}'
-)";
-            $sql->query($query);
+
+            Legend::factory()->create([
+                'legend_name' => $legend['Legend'],
+                'id_group' => $group_id['id_group'],
+                'id_lecturer' => Lecturer::where('name', $legend['lecturer_firstname'])
+                    ->where('lastname', $legend['lecturer_lastname'])
+                    ->first('id_lecturer')['id_lecturer'],
+                'id_room' => Classroom::where('room_number', $legend['room_number'])
+                    ->where('building', $legend['buiding'])
+                    ->first('id_room')['id_room'],
+                'subject_name' => $legend['subject'],
+            ]);
         }
 
     }
@@ -209,7 +231,6 @@ function getFullSubjectNames($table, $specialisation)
     $stationary = ($specialisation[0] === 's') ? 1 : 0;
     $year = $specialisation[1];
     $specialisation_only = substr($specialisation, 2);
-    $sql = new mysqli(env('DB_HOST'), env('DB_USERNAME'), env('DB_PASSWORD'), env('DB_DATABASE'));
 
 
     $legends = [];
@@ -233,12 +254,23 @@ function getFullSubjectNames($table, $specialisation)
 
         }
     }
-    $group_ids = $sql->query("SELECT 'group_id' FROM `student_groups` WHERE `specialisation` = '$specialisation_only' AND `stationary` = '$stationary' AND `year` = '$year'");
+    $group_ids = StudentGroup::where('specialisation', $specialisation_only)
+        ->where('stationary', $stationary)
+        ->where('year', $year)
+        ->get('id_group');
 
     foreach ($legends as $legend) {
         foreach ($group_ids as $group_id) {
-            $query = "INSERT IGNORE INTO abbreviations_full_names (abbreviation, full_name, id_group) VALUES ('{$legend['abbreviation']}', '{$legend['description']}', '{$group_id['group_id']}')";
-            $sql->query($query);
+            $existing_abbreviation = AbbreviationFullName::where('abbreviation', $legend['abbreviation'])
+                ->where('id_group', $group_id['id_group'])
+                ->first();
+
+            if (!$existing_abbreviation) {
+                AbbreviationFullName::factory()->create([
+                    'abbreviation' => $legend['abbreviation'],
+                    'id_group' => $group_id['id_group'],
+                ]);
+            }
         }
     }
 }

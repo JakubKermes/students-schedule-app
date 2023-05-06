@@ -50,9 +50,7 @@ Route::get('/scrap_schedule', function () {
 Route::get('/get_lecturers', function () {
     require_once app_path('crawlSite/updateLecturersAtCollegium.php');
 });
-Route::get('/all', function () {
-    require_once app_path('crawlSite/URLScraper.php');
-});
+
 
 Route::get('/get_faculties', [StudentGroupSelectionController::class, 'getFaculties']);
 Route::get('/get_fos/{id_faculty}', [StudentGroupSelectionController::class, 'getFOS']);

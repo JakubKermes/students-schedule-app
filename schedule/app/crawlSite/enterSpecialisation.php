@@ -1,24 +1,22 @@
 <?php
 ini_set('max_execution_time', 1000);
 
+use App\CrawlSite\URLScraper;
+use App\Models\Faculty;
+use App\Models\StudentGroup;
 
-$url_scraper = new URLScraper();
-$urls = $url_scraper->getAllURLs();
+
+$scraper = new URLScraper('http://www.plan.collegiumwitelona.pl/');
+$urls = $scraper->getAllURLs();
+
 file_put_contents("specialisations.txt", '');
 $id_faculty = 0;
 
-$sql = new mysqli(env('DB_HOST'), env('DB_USERNAME'), env('DB_PASSWORD'), env('DB_DATABASE'));
-
-
 foreach ($urls as $url) {
 
-    if (str_contains($url, 'id_faculty')) {
-        $id_faculty = explode('=', $url)[1];
-    }
-
-
     if (str_contains($url, 'checkSpecjalnosc')) {
-        echo "url = $url";
+        $id_faculty = getIdFaculty($url, $urls);
+
 
         $query_string = parse_url($url, PHP_URL_QUERY);
         parse_str($query_string, $params);
@@ -45,10 +43,8 @@ foreach ($urls as $url) {
             $current_column = str_replace(mb_convert_encoding($specialisation, 'UTF-8', 'ISO-8859-2'), '', $td->nodeValue);
             if (in_array($current_column, $column_names)) continue;
             $column_names[] = $current_column;
-//            file_put_contents("groups.txt", $current_column . "  " . $specialisation . "  " . $url . "\n", FILE_APPEND);
         }
 
-        //get name of specialisation
 
         if ($id_faculty != 0) {
             $url = 'http://www.plan.pwsz.legnica.edu.pl/schedule_view.php?site=show_kierunek.php&id=' . $id_faculty;
@@ -80,21 +76,68 @@ foreach ($urls as $url) {
                 $name = substr($name, 0, -1);
             }
         } else {
-            $name = 'example_specialisation'; // replace with the actual value
+            $name = 'example_specialisation';
         }
 
         $name = mb_convert_encoding($name, 'UTF-8', 'ISO-8859-2');
 
 
         foreach ($column_names as $group) {
-            $query_string = "INSERT IGNORE INTO field_of_study (id_faculty, fos, year, stationary, specialisation, spec_group) VALUES ((SELECT id_faculty FROM faculty WHERE id_at_collegiumwitelona = $id_faculty), '$name', '$year', '$stationary', '$specialisation_only', '$group')";
+            $faculty = Faculty::where('id_at_collegiumwitelona', $id_faculty)->first();
 
-            $sql->query($query_string);
+            if ($faculty) {
+                $studentGroup = new StudentGroup([
+                    'id_faculty' => $faculty->id_faculty,
+                    'fos' => $name,
+                    'year' => $year,
+                    'stationary' => $stationary,
+                    'specialisation' => $specialisation_only,
+                    'spec_group' => $group
+                ]);
+            }
+            $existingStudentGroup = StudentGroup::where('id_faculty', $faculty->id_faculty)
+                ->where('fos', $name)
+                ->where('year', $year)
+                ->where('stationary', $stationary)
+                ->where('specialisation', $specialisation_only)
+                ->where('spec_group', $group)
+                ->first();
+            if (!$existingStudentGroup) {
+                $studentGroup->save();
+            }
 
         }
 
 
     }
 }
+
+function getIdFaculty($url, $urls)
+{
+    $url = substr($url, 37);
+    $url = str_replace('%A3', 'Ł', $url);
+    $url = str_replace('%AC', 'Ź', $url);
+    $id = 0;
+    foreach ($urls as $haystack) {
+        if (strpos($haystack, 'show_kierunek.php')) {
+
+            $DOM = new DOMDocument();
+
+            @$DOM->loadHTMLFile($haystack);
+
+            $xpath = new DOMXPath($DOM);
+            $elements = $xpath->query("//a/@href");
+
+            foreach ($elements as $element) {
+                if (str_contains($element->nodeValue, $url)) {
+                    $id = explode('=', $haystack)[2];
+                    return $id;
+                }
+            }
+        }
+    }
+    return $id;
+}
+
 
 ?>
