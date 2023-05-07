@@ -131,22 +131,46 @@ foreach ($urls as $url) {
                         continue;
                     }
 
-                    $existing_lecture_schedule = LectureSchedule::where('time_start', $event['time_start'])
-                        ->where('time_end', $event['time_end'])
-                        ->where('id_lecturer', Lecturer::where('name', $event['lecturer_name'])
-                            ->where('lastname', $event['lecturer_lastname'])
-                            ->first()->id_lecturer)
-                        ->where('id_group', StudentGroup::where('stationary', $event['stationary'])
-                            ->where('specialisation', $event['specialisation'])
-                            ->where('spec_group', $event['group'])
-                            ->first()->id_group)
-                        ->where('id_room', Classroom::where('building', $event['building'])
-                            ->where('room_number', $event['classroom'])
-                            ->first()->id_room)
-                        ->where('type', $event['type'])
-                        ->first();
+                    echo $event['lecturer_name'] . ' ' . $event['lecturer_lastname'] . '</br>';
 
-                    if (!$existing_lecture_schedule) {
+                    if(strpos($event['lecturer_name'], 'Legenda')) {
+                        $event['lecturer_lastname'] = substr($event['lecturer_name'], 0, -1);
+                        $event['lecturer_name'] = 'Legenda';
+                    }
+
+
+                    try {
+                        $existing_lecture_schedule = LectureSchedule::where('time_start', $event['time_start'])
+                            ->where('time_end', $event['time_end'])
+                            ->where('id_lecturer', Lecturer::where('name', $event['lecturer_name'])
+                                ->where('lastname', $event['lecturer_lastname'])
+                                ->firstOrFail()->id_lecturer)
+                            ->where('id_group', StudentGroup::where('stationary', $event['stationary'])
+                                ->where('specialisation', $event['specialisation'])
+                                ->where('spec_group', $event['group'])
+                                ->firstOrFail()->id_group)
+                            ->where('id_room', Classroom::where('building', $event['building'])
+                                ->where('room_number', $event['classroom'])
+                                ->firstOrFail()->id_room)
+                            ->where('type', $event['type'])
+                            ->firstOrFail();
+                    } catch (ErrorException $e) {
+                        $existing_lecture_schedule = null;
+                    }
+
+                    try {
+                        $existing_lecturer = Lecturer::where('name', $event['lecturer_name'])
+                            ->where('lastname', $event['lecturer_lastname'])
+                            ->firstOrFail();
+                    } catch (ErrorException $e) {
+                        Lecturer::factory()->create([
+                            'name' => $event['lecturer_name'],
+                            'lastname' => $event['lecturer_lastname'],
+                        ]);
+                    }
+
+
+                    if ($existing_lecture_schedule === null) {
                         LectureSchedule::factory()->create([
                             'id_lecturer' => Lecturer::where('name', $event['lecturer_name'])
                                 ->where('lastname', $event['lecturer_lastname'])
@@ -282,7 +306,7 @@ function clearName($name)
     $titles_array = array();
 
 
-    $titles = ['dr', 'hab', 'hab.', 'inż.', 'mgr', 'prof.', 'lic', 'lek.', 'lek', 'med', 'med.', 'n.', 'mgr.', 'dent.', 'dent'];
+    $titles = ['dr', 'hab', 'hab.', 'inż.', 'mgr', 'prof.', 'lic', 'lek.', 'lek', 'med', 'med.', 'n.', 'mgr.', 'dent.', 'dent', 'prof.dr', 'hab.inż.'];
 
     foreach ($titles as $title) {
         if (in_array($title, $name_array)) {

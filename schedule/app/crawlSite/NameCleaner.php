@@ -16,7 +16,7 @@ class NameCleaner
         $name_array = explode(' ', $this->scrapped_name);
         $titles_array = array();
 
-        $titles = ['dr', 'hab', 'hab.', 'inż.', 'mgr', 'prof.', 'lic', 'lek.', 'lek', 'med', 'med.', 'n.', 'mgr.', 'dent.', 'dent'];
+        $titles = ['dr', 'hab', 'hab.', 'inż.', 'mgr', 'prof.', 'lic', 'lek.', 'lek', 'med', 'med.', 'n.', 'mgr.', 'dent.', 'dent', 'hab.inż.', 'prof.dr'];
 
         foreach ($titles as $title) {
             if (in_array($title, $name_array)) {
