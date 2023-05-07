@@ -4,6 +4,14 @@ import axios from 'axios';
 import Schedule from '../Components/Schedule.jsx';
 
 export default function Welcome(props) {
+    const [lectures, setLectures] = useState(null);
+
+    useEffect(() => {
+        axios.get('/get_schedule/1').then((response) => {
+            setLectures(response.data);
+        });
+    } , []);
+
     return (
         <>
             <Head title="Welcome" />
@@ -43,7 +51,7 @@ export default function Welcome(props) {
                     </div>
 
                     <div className="mt-16">
-
+                        <Schedule lectures={lectures} />
                     </div>
 
                 </div>
