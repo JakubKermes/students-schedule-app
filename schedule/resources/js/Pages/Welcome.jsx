@@ -52,6 +52,7 @@ export default function Welcome(props) {
                     </div>
                     <div className="mt-16">
                         <StudentGroupSelector />
+                        <br/>
                         <Schedule lectures={lectures} />
                     </div>
 

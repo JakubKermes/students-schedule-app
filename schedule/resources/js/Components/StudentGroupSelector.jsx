@@ -164,9 +164,9 @@ const StudentGroupSelector = ({ onChange }) => {
 
     return (
         <div>
-            <label htmlFor="faculty-select">Wydział:</label>
-            <select id="faculty-select" onChange={handleFacultyChange}>
-                <option value="">Wybierz wydział</option>
+            <label className={'text-gray-300'} htmlFor="faculty-select">Faculty:</label>
+            <select className={'dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm '} id="faculty-select" onChange={handleFacultyChange}>
+                <option value="">Select faculty</option>
                 {faculties.map(faculty => (
                     <option key={faculty.id_faculty} value={faculty.id_faculty}>
                         {faculty.faculty_name}
@@ -176,9 +176,9 @@ const StudentGroupSelector = ({ onChange }) => {
             {loading && <p>Loading...</p>}
             {fos.length > 0 && (
                 <>
-                    <label htmlFor="fos-select">Kierunek:</label>
-                    <select id="fos-select" onChange={handleFOSChange}>
-                        <option value="">Wybierz kierunek</option>
+                    <label className={'text-gray-300'} htmlFor="fos-select">Field of study:</label>
+                    <select className={'dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm '} id="fos-select" onChange={handleFOSChange}>
+                        <option value="">Select field of study</option>
                         {fos.map(fosItem => (
                             <option key={fosItem.id_fos} value={fosItem.fos_name}>
                                 {fosItem.fos_name}
@@ -190,9 +190,9 @@ const StudentGroupSelector = ({ onChange }) => {
             )}
             {years.length > 0 && (
                 <>
-                    <label htmlFor="year-select">Rok:</label>
-                    <select id="year-select" onChange={handleYearChange}>
-                        <option value="">Wybierz rok</option>
+                    <label className={'text-gray-300'} htmlFor="year-select">Year:</label>
+                    <select className={'dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm '} id="year-select" onChange={handleYearChange}>
+                        <option value="">Select year</option>
                         {years.map(year => (
                             <option key={year} value={year}>
                                 {year}
@@ -204,9 +204,9 @@ const StudentGroupSelector = ({ onChange }) => {
             )}
             {specialisations.length > 0 && (
                 <>
-                    <label htmlFor="specialisation-select">Specjalizacja:</label>
-                    <select id="specialisation-select" onChange={handleSpecialisationChange}>
-                        <option value="">Wybierz specjalizację</option>
+                    <label className={'text-gray-300'} htmlFor="specialisation-select">Specialisation:</label>
+                    <select className={'dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm '} id="specialisation-select" onChange={handleSpecialisationChange}>
+                        <option value="">Select specialisation</option>
                         {specialisations.map(specialisation =>  (
                             <option key={specialisation.id_specialisation} value={specialisation.specialisation_name}>
                                 {specialisation.specialisation_name}
@@ -218,9 +218,9 @@ const StudentGroupSelector = ({ onChange }) => {
             )}
             {stationaries.length > 0 && (
                 <>
-                    <label htmlFor="stationary-select">Stacjonarność:</label>
-                    <select id="stationary-select" onChange={handleStationaryChange}>
-                        <option value="">Wybierz stacjonarność</option>
+                    <label className={'text-gray-300'} htmlFor="stationary-select">Stationary:</label>
+                    <select className={'dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm '} id="stationary-select" onChange={handleStationaryChange}>
+                        <option value="">Select stationarity</option>
                         {stationaries.map(stationary =>  (
                             <option key={stationary.id_stationary} value={stationary.stationary_name}>
                                 {stationary.stationary_name}
@@ -232,9 +232,9 @@ const StudentGroupSelector = ({ onChange }) => {
             )}
             {specGroups.length > 0 && (
                 <>
-                    <label htmlFor="spec-group-select">Grupa specjalizacyjna:</label>
-                    <select id="spec-group-select" onChange={handleSpecGroupChange}>
-                        <option value="">Wybierz grupę specjalizacyjną</option>
+                    <label className={'text-gray-300'} htmlFor="spec-group-select">Specialisation group:</label>
+                    <select className={'dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm '} id="spec-group-select" onChange={handleSpecGroupChange}>
+                        <option value="">Select specialisation group</option>
                         {specGroups.map(specGroup =>  (
                             <option key={specGroup.id_spec_group} value={specGroup.spec_group_name}>
                                 {specGroup.spec_group_name}
@@ -246,9 +246,9 @@ const StudentGroupSelector = ({ onChange }) => {
             )}
             {groups.length > 0 && (
                 <>
-                    <label htmlFor="group-select">Grupa:</label>
-                    <select id="group-select">
-                        <option value="">Wybierz grupę</option>
+                    <label className={'text-gray-300'} htmlFor="group-select">Group:</label>
+                    <select className={'dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm '} id="group-select">
+                        <option value="">Select group</option>
                         {groups.map(group =>  (
                             <option key={group.id_group} value={group.group_name}>
                                 {group.group_name}
