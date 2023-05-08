@@ -31,9 +31,31 @@ const Schedule = ({ lectures, onAddEvent }) => {
 
     const handleSubmit = (event) => {
         event.preventDefault();
-        onAddEvent(newEvent);
-        setIsAddingEvent(false);
+
+        const token = document.head.querySelector('meta[name="csrf-token"]').content;
+
+        if (!newEvent.title || !newEvent.start || !newEvent.end) {
+            return;
+        }
+
+        fetch('/schedule', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': token,
+            },
+            body: JSON.stringify(newEvent),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                onAddEvent(data);
+                setIsAddingEvent(false);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
     };
+
 
     const handleClose = () => {
         setIsAddingEvent(false);
@@ -59,6 +81,12 @@ const Schedule = ({ lectures, onAddEvent }) => {
         };
     };
 
+    const dayPropGetter = (date) => {
+        return {
+            className: 'hover:bg-blue-100',
+        };
+    };
+
     return (
         <div className="bg-white rounded-md shadow-md p-4 text-black">
             <Calendar
@@ -68,6 +96,7 @@ const Schedule = ({ lectures, onAddEvent }) => {
                 endAccessor="end"
                 className="h-96"
                 eventPropGetter={eventPropGetter}
+                dayPropGetter={dayPropGetter}
                 style={{ height: 500, width: '100%', margin: '0 auto' }}
                 selectable
                 onSelectSlot={(slotInfo) => handleSelectDate(slotInfo.start)}

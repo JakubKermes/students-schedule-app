@@ -6,7 +6,6 @@ import TextInput from "@/Components/TextInput";
 import Schedule from "@/Components/Schedule";
 
 export default function Dashboard(props) {
-    let onEventAdd;
     return (
         <AuthenticatedLayout
             auth={props.auth}

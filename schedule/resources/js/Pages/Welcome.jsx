@@ -2,12 +2,13 @@ import { Link, Head } from '@inertiajs/react';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Schedule from '../Components/Schedule.jsx';
+import StudentGroupSelector from "@/Components/StudentGroupSelector";
 
 export default function Welcome(props) {
     const [lectures, setLectures] = useState(null);
 
     useEffect(() => {
-        axios.get('/get_schedule/1').then((response) => {
+        axios.get('/get_schedule/').then((response) => {
             setLectures(response.data);
         });
     } , []);
@@ -49,8 +50,8 @@ export default function Welcome(props) {
                             <span className="text-white">PLAN.</span><span className="text-blue-500">IO</span>
                         </h1>
                     </div>
-
                     <div className="mt-16">
+                        <StudentGroupSelector />
                         <Schedule lectures={lectures} />
                     </div>
 
