@@ -44,12 +44,16 @@ const StudentGroupSelector = ({ onChange }) => {
             .catch(error => {
                 console.log(error);
                 setLoading(false);
+                console.log(error.response);
             });
     };
 
     const handleFOSChange = event => {
         const facultyId = document.getElementById('faculty-select').value;
-        const fosName = event.target.value;
+        const fosName = document.getElementById('fos-select').value;
+        console.log('facultyId:', facultyId);
+        console.log('fosName:', fosName);
+
         if (!fosName) {
             setYears([]);
             setSpecialisations([]);
@@ -58,10 +62,12 @@ const StudentGroupSelector = ({ onChange }) => {
             setGroups([]);
             return;
         }
+
         setLoading(true);
+
         axios.get(`/get_year/${facultyId}/${fosName}`)
             .then(response => {
-                setYears(response.data);
+                setYears(response.data.map(year => ({ value: year.year, label: year.year })));
                 setLoading(false);
             })
             .catch(error => {
@@ -76,7 +82,6 @@ const StudentGroupSelector = ({ onChange }) => {
         const yearNumber = event.target.value;
         if (!yearNumber) {
             setSpecialisations([]);
-            setStationaries([]);
             setSpecGroups([]);
             setGroups([]);
             return;
@@ -86,6 +91,10 @@ const StudentGroupSelector = ({ onChange }) => {
             .then(response => {
                 setSpecialisations(response.data);
                 setLoading(false);
+                if (yearNumber === "0") {
+                    setSpecGroups([]);
+                    setGroups([]);
+                }
             })
             .catch(error => {
                 console.log(error);
@@ -173,33 +182,32 @@ const StudentGroupSelector = ({ onChange }) => {
                     </option>
                 ))}
             </select>
-            {loading && <p>Loading...</p>}
             {fos.length > 0 && (
                 <>
                     <label className={'text-gray-300'} htmlFor="fos-select">Field of study:</label>
                     <select className={'dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm '} id="fos-select" onChange={handleFOSChange}>
                         <option value="">Select field of study</option>
                         {fos.map(fosItem => (
-                            <option key={fosItem.id_fos} value={fosItem.fos_name}>
-                                {fosItem.fos_name}
+                            <option key={fosItem.fos} value={fosItem.fos_name}>
+                                {fosItem.fos}
                             </option>
                         ))}
                     </select>
-                    {loading && <p>Loading...</p>}
+                    {loading}
                 </>
             )}
-            {years.length > 0 && (
+            {years && years.length > 0 && (
                 <>
                     <label className={'text-gray-300'} htmlFor="year-select">Year:</label>
                     <select className={'dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm '} id="year-select" onChange={handleYearChange}>
                         <option value="">Select year</option>
-                        {years.map(year => (
-                            <option key={year} value={year}>
-                                {year}
+                        {years.map((year, index) => (
+                            <option key={index} value={year.value}>
+                                {year.label}
                             </option>
                         ))}
                     </select>
-                    {loading && <p>Loading...</p>}
+                    {loading}
                 </>
             )}
             {specialisations.length > 0 && (
@@ -207,13 +215,13 @@ const StudentGroupSelector = ({ onChange }) => {
                     <label className={'text-gray-300'} htmlFor="specialisation-select">Specialisation:</label>
                     <select className={'dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm '} id="specialisation-select" onChange={handleSpecialisationChange}>
                         <option value="">Select specialisation</option>
-                        {specialisations.map(specialisation =>  (
-                            <option key={specialisation.id_specialisation} value={specialisation.specialisation_name}>
-                                {specialisation.specialisation_name}
+                        {specialisations.map(specialisation => (
+                            <option key={specialisation.specialisation} value={specialisation.specialisation}>
+                                {specialisation.specialisation}
                             </option>
                         ))}
                     </select>
-                    {loading && <p>Loading...</p>}
+                    {loading}
                 </>
             )}
             {stationaries.length > 0 && (
@@ -227,7 +235,7 @@ const StudentGroupSelector = ({ onChange }) => {
                             </option>
                         ))}
                     </select>
-                    {loading && <p>Loading...</p>}
+                    {loading}
                 </>
             )}
             {specGroups.length > 0 && (
@@ -241,7 +249,7 @@ const StudentGroupSelector = ({ onChange }) => {
                             </option>
                         ))}
                     </select>
-                    {loading && <p>Loading...</p>}
+                    {loading}
                 </>
             )}
             {groups.length > 0 && (
@@ -255,7 +263,7 @@ const StudentGroupSelector = ({ onChange }) => {
                             </option>
                         ))}
                     </select>
-                    {loading && <p>Loading...</p>}
+                    {loading}
                 </>
             )}
         </div>

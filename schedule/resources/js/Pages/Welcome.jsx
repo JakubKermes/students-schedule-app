@@ -3,13 +3,14 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Schedule from '../Components/Schedule.jsx';
 import StudentGroupSelector from "@/Components/StudentGroupSelector";
+import ErrorBoundary from "@/Components/ErrorBoundary";
 
 export default function Welcome(props) {
     const [lectures, setLectures] = useState(null);
 
     useEffect(() => {
-        axios.get('/get_schedule/').then((response) => {
-            setLectures(response.data);
+        axios.get('/get_schedule/1/').then((response) => {
+            setLectures(response.data.schedule);
         });
     } , []);
 
@@ -23,7 +24,7 @@ export default function Welcome(props) {
                             href={route('dashboard')}
                             className="font-semibold text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white focus:outline focus:outline-2 focus:rounded-sm focus:outline-blue-300"
                         >
-                            Dashboard
+                            {props.auth.user.name}
                         </Link>
                     ) : (
                         <>
@@ -50,12 +51,14 @@ export default function Welcome(props) {
                             <span className="text-white">PLAN.</span><span className="text-blue-500">IO</span>
                         </h1>
                     </div>
-                    <div className="mt-16">
+                    <div className="mt-16 sm:flex-row sm:justify-center sm:items-center">
+                        <ErrorBoundary>
                         <StudentGroupSelector />
-                        <br/>
+                        </ErrorBoundary>
+                    </div>
+                    <div className="mt-16">
                         <Schedule lectures={lectures} />
                     </div>
-
                 </div>
             </div>
 
