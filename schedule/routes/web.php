@@ -61,6 +61,8 @@ Route::get('/get_spec_group/{id_faculty}/{fos}/{year}/{specialisation}/{stationa
 Route::get('/get_group/{id_faculty}/{fos}/{year}/{specialisation}/{spec_group}/{stationary}', [StudentGroupSelectionController::class, 'getGroup']);
 
 Route::get('/get_schedule/{id_group}', [App\Http\Controllers\ScheduleController::class, 'getSchedule']);
+Route::post('/user-event', [App\Http\Controllers\UserEventController::class, 'store']);
+
 
 
 require __DIR__.'/auth.php';
