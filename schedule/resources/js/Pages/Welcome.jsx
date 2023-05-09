@@ -9,7 +9,7 @@ export default function Welcome(props) {
     const [lectures, setLectures] = useState(null);
 
     useEffect(() => {
-        axios.get('/get_schedule/1/').then((response) => {
+        axios.get('/get_schedule/105/').then((response) => {
             setLectures(response.data.schedule);
         });
     } , []);
