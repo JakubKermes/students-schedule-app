@@ -4,7 +4,8 @@ namespace App\Console\Commands;
 
 use App\Models\LectureSchedule;
 use Illuminate\Console\Command;
-use App\Models\*;
+use Illuminate\Support\Facades\Http;
+
 
 class RefreshSchedule extends Command
 {

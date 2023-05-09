@@ -66,10 +66,12 @@ foreach ($urls as $url) {
                 $k = intdiv($j, 7);
                 for ($i = 0; $i < count($nazwaSpecjalnosci); $i++) {
 
-                    $subject = explode($test[0], '(|)')[0];
+                    $subject = explode(' ', $test[0])[0];
 
-                    $result = explode('(|)', $test[0], 2);
-                    $type = (count($result) >= 2) ? $result[1] : '';
+                    $pattern = '/\((.*?)\)/'; // pattern to match text inside parentheses
+                    preg_match($pattern, $test[0], $matches); // search for pattern in $test[0]
+                    $type = isset($matches[1]) ? $matches[1] : ''; // assign the matched string to $type or an empty string if no match is found
+
 
                     $date = explode(' ', $day[$k])[1];
 
@@ -113,7 +115,7 @@ foreach ($urls as $url) {
                         'date' => $date,
                         'time_start' => $time_start,
                         'time_end' => $time_end,
-                        'subject' => $test[0],
+                        'subject' => $subject,
                         'lecturer_name' => $lecturer_name['first_name'],
                         'lecturer_lastname' => $lecturer_name['last_name'],
                         'classroom' => $classroom,
@@ -136,10 +138,10 @@ foreach ($urls as $url) {
                     if(strpos($event['lecturer_name'], 'Legenda')) {
                         $event['lecturer_lastname'] = substr($event['lecturer_name'], 0, -1);
                         $event['lecturer_name'] = 'Legenda';
+
                     }
 
 
-                    try {
                         $existing_lecture_schedule = LectureSchedule::where('time_start', $event['time_start'])
                             ->where('time_end', $event['time_end'])
                             ->where('id_lecturer', Lecturer::where('name', $event['lecturer_name'])
@@ -153,21 +155,20 @@ foreach ($urls as $url) {
                                 ->where('room_number', $event['classroom'])
                                 ->firstOrFail()->id_room)
                             ->where('type', $event['type'])
-                            ->firstOrFail();
-                    } catch (ErrorException $e) {
-                        $existing_lecture_schedule = null;
-                    }
+                            ->first();
 
-                    try {
+
+
                         $existing_lecturer = Lecturer::where('name', $event['lecturer_name'])
                             ->where('lastname', $event['lecturer_lastname'])
-                            ->firstOrFail();
-                    } catch (ErrorException $e) {
-                        Lecturer::factory()->create([
-                            'name' => $event['lecturer_name'],
-                            'lastname' => $event['lecturer_lastname'],
-                        ]);
-                    }
+                            ->first();
+                        if ($existing_lecturer === null) {
+                            Lecturer::factory()->create([
+                                'name' => $event['lecturer_name'],
+                                'lastname' => $event['lecturer_lastname'],
+                            ]);
+                        }
+
 
 
                     if ($existing_lecture_schedule === null) {

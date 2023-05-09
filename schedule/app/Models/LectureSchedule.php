@@ -16,6 +16,7 @@ class LectureSchedule extends Model
         'id_lecturer',
         'id_group',
         'id_room',
+        'subject',
         'type',
         'time_start',
         'time_end',
