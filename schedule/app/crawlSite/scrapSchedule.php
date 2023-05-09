@@ -1,3 +1,4 @@
+
 <?php
 
 ini_set('max_execution_time', 1000);
@@ -15,11 +16,16 @@ $scraper = new URLScraper('http://www.plan.collegiumwitelona.pl/');
 $urls = $scraper->getAllURLs();
 
 foreach ($urls as $url) {
-    echo $url . PHP_EOL;
+//    echo $url . PHP_EOL;
     if (strpos($url, 'checkSpecjalnoscStac') === false) {
         continue;
     }
-
+    if(strpos($url, "%A3")){
+        $url = str_replace("%A3", "Ł", $url);
+    }
+    if(strpos($url, "%AC")){
+        $url = str_replace("%AC", "Ź", $url);
+    }
     $specialisation = explode('=', $url)[1];
 
     $response = file_get_contents($url);
@@ -111,6 +117,8 @@ foreach ($urls as $url) {
                     $specialisation_length = strlen($specialisation_only);
                     $group = substr($nazwaSpecjalnosci[$i], $specialisation_length + 2);
 
+
+
                     $event = [
                         'date' => $date,
                         'time_start' => $time_start,
@@ -133,43 +141,46 @@ foreach ($urls as $url) {
                         continue;
                     }
 
-                    echo $event['lecturer_name'] . ' ' . $event['lecturer_lastname'] . '</br>';
 
-                    if(strpos($event['lecturer_name'], 'Legenda')) {
-                        $event['lecturer_lastname'] = substr($event['lecturer_name'], 0, -1);
-                        $event['lecturer_name'] = 'Legenda';
+                    if(str_contains($event['lecturer_name'], "Legenda")){
+                        $event['lecturer_lastname'] = substr($event['lecturer_name'], 7);
+                        $event['lecturer_name'] = "Legenda";
 
                     }
 
-
-                        $existing_lecture_schedule = LectureSchedule::where('time_start', $event['time_start'])
-                            ->where('time_end', $event['time_end'])
-                            ->where('id_lecturer', Lecturer::where('name', $event['lecturer_name'])
-                                ->where('lastname', $event['lecturer_lastname'])
-                                ->firstOrFail()->id_lecturer)
-                            ->where('id_group', StudentGroup::where('stationary', $event['stationary'])
+                    $existing_lecture_schedule = LectureSchedule::where('time_start', $event['time_start'])
+                        ->where('time_end', $event['time_end'])
+                        ->whereHas('lecturer', function ($query) use ($event) {
+                            $query->where('name', $event['lecturer_name'])
+                                ->where('lastname', $event['lecturer_lastname']);
+                        })
+                        ->whereHas('group', function ($query) use ($event) {
+                            $query->where('stationary', $event['stationary'])
                                 ->where('specialisation', $event['specialisation'])
-                                ->where('spec_group', $event['group'])
-                                ->firstOrFail()->id_group)
-                            ->where('id_room', Classroom::where('building', $event['building'])
-                                ->where('room_number', $event['classroom'])
-                                ->firstOrFail()->id_room)
-                            ->where('type', $event['type'])
-                            ->first();
+                                ->where('spec_group', $event['group']);
+                        })
+                        ->whereHas('room', function ($query) use ($event) {
+                            $query->where('building', $event['building'])
+                                ->where('room_number', $event['classroom']);
+                        })
+                        ->where('type', $event['type'])
+                        ->first();
 
 
 
-                        $existing_lecturer = Lecturer::where('name', $event['lecturer_name'])
-                            ->where('lastname', $event['lecturer_lastname'])
-                            ->first();
-                        if ($existing_lecturer === null) {
-                            Lecturer::factory()->create([
-                                'name' => $event['lecturer_name'],
-                                'lastname' => $event['lecturer_lastname'],
-                            ]);
-                        }
-
-
+                    $existing_lecturer = Lecturer::where('name', $event['lecturer_name'])
+                        ->where('lastname', $event['lecturer_lastname'])
+                        ->first();
+                    if ($existing_lecturer === null) {
+                        Lecturer::factory()->create([
+                            'name' => $event['lecturer_name'],
+                            'lastname' => $event['lecturer_lastname'],
+                            'title' => '',
+                            'id_at_collegiumwitelona' => '0',
+                            'id_faculty' => '6',
+                        ]);
+                    }
+                    echo $url . '<br>';
 
                     if ($existing_lecture_schedule === null) {
                         LectureSchedule::factory()->create([
@@ -235,17 +246,49 @@ function getLegends($table, $specialisation)
     foreach ($group_ids as $group_id) {
         foreach ($legends as $legend) {
 
-            Legend::factory()->create([
-                'legend_name' => $legend['Legend'],
-                'id_group' => $group_id['id_group'],
-                'id_lecturer' => Lecturer::where('name', $legend['lecturer_firstname'])
-                    ->where('lastname', $legend['lecturer_lastname'])
-                    ->first('id_lecturer')['id_lecturer'],
-                'id_room' => Classroom::where('room_number', $legend['room_number'])
-                    ->where('building', $legend['buiding'])
-                    ->first('id_room')['id_room'],
-                'subject_name' => $legend['subject'],
-            ]);
+            $existing_legend = Legend::where('legend_name', $legend['Legend'])
+                ->where('id_group', $group_id['id_group'])
+                ->where('id_lecturer', function ($query) use ($legend) {
+                    $query->from('lecturers')
+                        ->where('name', $legend['lecturer_firstname'])
+                        ->where('lastname', $legend['lecturer_lastname'])
+                        ->select('id_lecturer')->first();
+                })
+                ->where('id_room', function ($query) use ($legend) {
+                    $query->from('classrooms')
+                        ->where('building', $legend['buiding'])
+                        ->where('room_number', $legend['room_number'])
+                        ->select('id_room');
+                })
+                ->where('subject_name', $legend['subject'])
+                ->first();
+
+            $existing_room = Classroom::where('building', $legend['buiding'])
+                ->where('room_number', $legend['room_number'])
+                ->first();
+
+            if(!$existing_room){
+                Classroom::factory()->create([
+                    'building' => $legend['buiding'],
+                    'room_number' => $legend['room_number'],
+                ]);
+            }
+
+
+            if(!$existing_legend){
+                echo $legend['lecturer_lastname'] ." | ". $legend['lecturer_firstname'] . '<br>';
+                Legend::factory()->create([
+                    'legend_name' => $legend['Legend'],
+                    'id_group' => $group_id['id_group'],
+                    'id_lecturer' => Lecturer::where('name', $legend['lecturer_firstname'])
+                        ->where('lastname', $legend['lecturer_lastname'])
+                        ->first('id_lecturer')->id_lecturer,
+                    'id_room' => Classroom::where('room_number', $legend['room_number'])
+                        ->where('building', $legend['buiding'])
+                        ->first()->id_room,
+                    'subject_name' => $legend['subject'],
+                ]);
+            }
         }
 
     }
@@ -325,10 +368,19 @@ function clearName($name)
     $last_name = implode(' ', $name_array);
     $actual_titles = implode(' ', $titles_array);
 
+    if(strpos($name, 'Legenda')){
+        $first_name = 'Legenda';
+        $last_name = substr($first_name, 7);
+    }
+
+    if(str_contains($last_name, "Barbara Cieślik")){
+        $first_name = "Barbara";
+        $last_name = "Cieślik";
+    }
+
     return [
         'actual_titles' => $actual_titles,
         'first_name' => $first_name,
         'last_name' => $last_name,
     ];
 }
-

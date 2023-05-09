@@ -25,6 +25,12 @@ class ScheduleController extends Controller
             }
         }
 
+        foreach ($schedule as $item) {
+            $lecturer = Lecturer::where('id_lecturer', $item->id_lecturer)->first();
+            $item->lecturer_name = $lecturer->name . ' ' . $lecturer->lastname;
+
+        }
+
         $response_data = [
             'schedule' => $schedule,
             'legends' => $legends
