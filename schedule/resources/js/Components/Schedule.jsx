@@ -66,7 +66,7 @@ const Schedule = ({ lectures, onAddEvent }) => {
             if (lecture.hasOwnProperty('id_lecture')) {
                 acc.push({
                     id: lecture.id_lecture,
-                    title: `${lecture.id_lecture}`,
+                    title: `${lecture.subject}  `,
                     start: new Date(lecture.time_start),
                     end: new Date(lecture.time_end),
                 });

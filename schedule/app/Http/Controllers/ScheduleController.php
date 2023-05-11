@@ -22,6 +22,8 @@ class ScheduleController extends Controller
                     ->get();
             } else {
                 $legends = [];
+                $schedule->lecturer_name =$lecturer->title . ' ' . $lecturer->name . ' ' . $lecturer->lastname;
+
             }
         }
 
