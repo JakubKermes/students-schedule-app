@@ -8,6 +8,7 @@ const StudentGroupSelector = ({ onChange }) => {
     const [years, setYears] = useState([]);
     const [specialisations, setSpecialisations] = useState([]);
     const [stationaries, setStationaries] = useState([]);
+    const [isStationarySelected, setIsStationarySelected] = useState(false);
     const [specGroups, setSpecGroups] = useState([]);
     const [groups, setGroups] = useState([]);
 
@@ -125,21 +126,25 @@ const StudentGroupSelector = ({ onChange }) => {
             });
     };
 
-    const handleStationaryChange = event => {
+    const handleStationaryToggle = () => {
+        setIsStationarySelected(!isStationarySelected);
+        const newStationaryValue = isStationarySelected ? 0 : 1;
+        handleStationaryChange(newStationaryValue);
+    };
+
+    const handleStationaryChange = (stationaryValue) => {
         const facultyId = document.getElementById('faculty-select').value;
         const fosName = document.getElementById('fos-select').value;
         const yearNumber = document.getElementById('year-select').value;
         const specialisationName = document.getElementById('specialisation-select').value;
-        const stationaryName = event.target.value;
-        if (!stationaryName) {
-            setSpecGroups([]);
-            setGroups([]);
-            return;
-        }
+        console.log('stationaryValue:', stationaryValue);
+
         setLoading(true);
-        axios.get(`/get_spec_group/${facultyId}/${fosName}/${yearNumber}/${specialisationName}/${stationaryName}`)
+        axios
+            .get(`/get_spec_group/${facultyId}/${fosName}/${yearNumber}/${specialisationName}/${stationaryValue}`)
             .then(response => {
-                setSpecGroups(response.data);
+                const specGroupsData = response.data.map(item => ({ value: item.spec_group, label: item.spec_group }));
+                setSpecGroups(specGroupsData);
                 setLoading(false);
             })
             .catch(error => {
@@ -155,12 +160,15 @@ const StudentGroupSelector = ({ onChange }) => {
         const specialisationName = document.getElementById('specialisation-select').value;
         const stationaryName = document.getElementById('stationary-select').value;
         const specGroupName = event.target.value;
+
         if (!specGroupName) {
             setGroups([]);
             return;
         }
+
         setLoading(true);
-        axios.get(`/get_group/${facultyId}/${fosName}/${yearNumber}/${specialisationName}/${specGroupName}/${stationaryName}`)
+        axios
+            .get(`/get_group/${facultyId}/${fosName}/${yearNumber}/${specialisationName}/${stationaryName}/${specGroupName}`)
             .then(response => {
                 setGroups(response.data);
                 setLoading(false);
@@ -170,6 +178,7 @@ const StudentGroupSelector = ({ onChange }) => {
                 setLoading(false);
             });
     };
+
 
     return (
         <div>
@@ -226,26 +235,28 @@ const StudentGroupSelector = ({ onChange }) => {
             )}
             {stationaries.length > 0 && (
                 <>
-                    <label className={'text-gray-300'} htmlFor="stationary-select">Stationary:</label>
-                    <select className={'dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm '} id="stationary-select" onChange={handleStationaryChange}>
-                        <option value="">Select stationarity</option>
-                        {stationaries.map(stationary =>  (
-                            <option key={stationary.id_stationary} value={stationary.stationary_name}>
-                                {stationary.stationary_name}
-                            </option>
-                        ))}
-                    </select>
+                    <label className={'text-gray-300'} htmlFor="stationary-select">Stationary: </label>
+                    <button
+                        className={'dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm '}
+                        onClick={handleStationaryToggle}
+                    >
+                        {isStationarySelected ? 'Yes' : 'No'}
+                    </button>
                     {loading}
                 </>
             )}
             {specGroups.length > 0 && (
                 <>
                     <label className={'text-gray-300'} htmlFor="spec-group-select">Specialisation group:</label>
-                    <select className={'dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm '} id="spec-group-select" onChange={handleSpecGroupChange}>
+                    <select
+                        className={'dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm '}
+                        id="spec-group-select"
+                        onChange={handleSpecGroupChange}
+                    >
                         <option value="">Select specialisation group</option>
-                        {specGroups.map(specGroup =>  (
-                            <option key={specGroup.id_spec_group} value={specGroup.spec_group_name}>
-                                {specGroup.spec_group_name}
+                        {specGroups.map(specGroup => (
+                            <option key={specGroup.value} value={specGroup.value}>
+                                {specGroup.label}
                             </option>
                         ))}
                     </select>
