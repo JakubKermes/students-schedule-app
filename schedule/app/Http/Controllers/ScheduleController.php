@@ -22,7 +22,15 @@ class ScheduleController extends Controller
                     ->get();
             } else {
                 $legends = [];
+                $schedule->lecturer_name =$lecturer->title . ' ' . $lecturer->name . ' ' . $lecturer->lastname;
+
             }
+        }
+
+        foreach ($schedule as $item) {
+            $lecturer = Lecturer::where('id_lecturer', $item->id_lecturer)->first();
+            $item->lecturer_name = $lecturer->name . ' ' . $lecturer->lastname;
+
         }
 
         $response_data = [

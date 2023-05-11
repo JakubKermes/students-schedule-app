@@ -18,7 +18,7 @@ class UserEventController extends Controller
         // Validate the incoming request data
         $validator = Validator::make($request->all(), [
             'event_name' => 'required|string',
-            'time_start' => 'required|date',
+            'time_start' => 'required|date|after:now',
             'time_end' => 'required|date|after:time_start',
         ]);
 
@@ -46,3 +46,5 @@ class UserEventController extends Controller
         return response()->json($userEvents, 200, [], JSON_UNESCAPED_UNICODE);
     }
 }
+
+

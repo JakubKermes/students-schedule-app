@@ -1,3 +1,4 @@
+
 <?php
 
 use App\Http\Controllers\ProfileController;
@@ -60,9 +61,12 @@ Route::get('/get_stationary/{id_faculty}/{fos}/{year}/{specialisation}', [Studen
 Route::get('/get_spec_group/{id_faculty}/{fos}/{year}/{specialisation}/{stationary}', [StudentGroupSelectionController::class, 'getSpecGroup']);
 Route::get('/get_group/{id_faculty}/{fos}/{year}/{specialisation}/{spec_group}/{stationary}', [StudentGroupSelectionController::class, 'getGroup']);
 
+Route::get('/get_legend/{id_group}', [App\Http\Controllers\LegendController::class, 'getLegend']);
+
 Route::get('/get_schedule/{id_group}', [App\Http\Controllers\ScheduleController::class, 'getSchedule']);
 Route::post('/user-event', [App\Http\Controllers\UserEventController::class, 'store']);
 
 
 
 require __DIR__.'/auth.php';
+
