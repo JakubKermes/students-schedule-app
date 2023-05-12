@@ -51,7 +51,7 @@ const StudentGroupSelector = ({ onChange }) => {
 
     const handleFOSChange = event => {
         const facultyId = document.getElementById('faculty-select').value;
-        const fosName = document.getElementById('fos-select').value;
+        const fosName = document.getElementById('fos-select').value.replace(/ /g, '%20');
         console.log('facultyId:', facultyId);
         console.log('fosName:', fosName);
 
@@ -79,7 +79,7 @@ const StudentGroupSelector = ({ onChange }) => {
 
     const handleYearChange = event => {
         const facultyId = document.getElementById('faculty-select').value;
-        const fosName = document.getElementById('fos-select').value;
+        const fosName = document.getElementById('fos-select').value.replace(/ /g, '%20');
         const yearNumber = event.target.value;
         if (!yearNumber) {
             setSpecialisations([]);
@@ -105,7 +105,7 @@ const StudentGroupSelector = ({ onChange }) => {
 
     const handleSpecialisationChange = event => {
         const facultyId = document.getElementById('faculty-select').value;
-        const fosName = document.getElementById('fos-select').value;
+        const fosName = document.getElementById('fos-select').value.replace(/ /g, '%20');
         const yearNumber = document.getElementById('year-select').value;
         const specialisationName = event.target.value;
         if (!specialisationName) {
@@ -134,7 +134,7 @@ const StudentGroupSelector = ({ onChange }) => {
 
     const handleStationaryChange = (stationaryValue) => {
         const facultyId = document.getElementById('faculty-select').value;
-        const fosName = document.getElementById('fos-select').value;
+        const fosName = document.getElementById('fos-select').value.replace(/ /g, '%20');
         const yearNumber = document.getElementById('year-select').value;
         const specialisationName = document.getElementById('specialisation-select').value;
         console.log('stationaryValue:', stationaryValue);
@@ -145,6 +145,7 @@ const StudentGroupSelector = ({ onChange }) => {
             .then(response => {
                 const specGroupsData = response.data.map(item => ({ value: item.spec_group, label: item.spec_group }));
                 setSpecGroups(specGroupsData);
+
                 setLoading(false);
             })
             .catch(error => {
@@ -154,17 +155,25 @@ const StudentGroupSelector = ({ onChange }) => {
     };
 
     const handleSpecGroupChange = event => {
+
         const facultyId = document.getElementById('faculty-select').value;
-        const fosName = document.getElementById('fos-select').value;
+        console.log('facultyId:', facultyId);
+        const fosName = document.getElementById('fos-select').value.replace(/ /g, '%20');
+        console.log('fosName:', fosName);
         const yearNumber = document.getElementById('year-select').value;
+        console.log('yearNumber:', yearNumber);
         const specialisationName = document.getElementById('specialisation-select').value;
-        const stationaryName = document.getElementById('stationary-select').value;
+        console.log('specialisationName:', specialisationName);
+        console.log('isStationarySelected:', isStationarySelected);
+        const stationaryName = isStationarySelected ? 1 : 0;
+        console.log('stationaryName:', stationaryName);
         const specGroupName = event.target.value;
 
         if (!specGroupName) {
             setGroups([]);
             return;
         }
+        console.log(`/get_group/${facultyId}/${fosName}/${yearNumber}/${specialisationName}/${specGroupName}/${stationaryName}`);
 
         setLoading(true);
         axios

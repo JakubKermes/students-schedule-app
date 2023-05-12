@@ -39,7 +39,7 @@ class StudentGroupSelectionController extends Controller
         $groups = StudentGroup::select('spec_group')->where('id_faculty', $id_faculty)->where('fos', $fos)->where('year', $year)->where('specialisation', $specialisation)->where('stationary', $stationary)->distinct()->get();
         return response()->json($groups, 200, [], JSON_UNESCAPED_UNICODE);
     }
-    public function getGroup($id_faculty, $fos, $year, $specialisation, $spec_group, $stationary)
+    public function getGroup($id_faculty, $fos, $year, $specialisation, $stationary, $spec_group)
     {
         $groups = StudentGroup::select('id_group')->where('id_faculty', $id_faculty)->where('fos', $fos)->where('year', $year)->where('specialisation', $specialisation)->where('spec_group', $spec_group)->where('stationary', $stationary)->distinct()->get();
         return response()->json($groups, 200, [], JSON_UNESCAPED_UNICODE);

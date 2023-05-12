@@ -59,7 +59,7 @@ Route::get('/get_year/{id_faculty}/{fos}', [StudentGroupSelectionController::cla
 Route::get('/get_specialisation/{id_faculty}/{fos}/{year}', [StudentGroupSelectionController::class, 'getSpecialisation']);
 Route::get('/get_stationary/{id_faculty}/{fos}/{year}/{specialisation}', [StudentGroupSelectionController::class, 'getStationary']);
 Route::get('/get_spec_group/{id_faculty}/{fos}/{year}/{specialisation}/{stationary}', [StudentGroupSelectionController::class, 'getSpecGroup']);
-Route::get('/get_group/{id_faculty}/{fos}/{year}/{specialisation}/{spec_group}/{stationary}', [StudentGroupSelectionController::class, 'getGroup']);
+Route::get('/get_group/{id_faculty}/{fos}/{year}/{specialisation}/{stationary}/{spec_group}', [StudentGroupSelectionController::class, 'getGroup']);
 
 Route::get('/get_legend/{id_group}', [App\Http\Controllers\LegendController::class, 'getLegend']);
 
