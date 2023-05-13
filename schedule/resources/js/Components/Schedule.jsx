@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
 import moment from 'moment';
+import 'moment/locale/pl';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import TextInput from "@/Components/TextInput";
 
-const localizer = momentLocalizer(moment);
+
 
 const Schedule = ({ lectures, onAddEvent }) => {
     const [selectedDate, setSelectedDate] = useState(null);
     const [isAddingEvent, setIsAddingEvent] = useState(false);
     const [newEvent, setNewEvent] = useState({ title: '', start: null, end: null });
+
+    moment.locale('pl');
+    const localizer = momentLocalizer(moment);
 
     const handleSelectDate = (date) => {
         setSelectedDate(date);
@@ -95,6 +99,7 @@ const Schedule = ({ lectures, onAddEvent }) => {
                 startAccessor="start"
                 endAccessor="end"
                 className="h-96"
+                firstDayOfWeek={1}
                 eventPropGetter={eventPropGetter}
                 dayPropGetter={dayPropGetter}
                 style={{ height: 500, width: '100%', margin: '0 auto' }}

@@ -7,12 +7,18 @@ import ErrorBoundary from "@/Components/ErrorBoundary";
 
 export default function Welcome(props) {
     const [lectures, setLectures] = useState(null);
+    const [groups, setGroups] = useState(null);
 
     useEffect(() => {
-        axios.get('/get_schedule/105/').then((response) => {
+        axios.get(`/get_schedule/${groups}`).then((response) => {
             setLectures(response.data.schedule);
+            console.log(groups)
         });
-    } , []);
+    } , [groups]);
+
+    const handleGroupsChange = (newGroups) => {
+        setGroups(newGroups);
+    }
 
     return (
         <>
@@ -53,7 +59,7 @@ export default function Welcome(props) {
                     </div>
                     <div className="mt-16 sm:flex-row sm:justify-center sm:items-center">
                         <ErrorBoundary>
-                        <StudentGroupSelector />
+                        <StudentGroupSelector onChange={handleGroupsChange}></StudentGroupSelector>
                         </ErrorBoundary>
                     </div>
                     <div className="mt-16">

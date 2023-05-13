@@ -52,8 +52,6 @@ const StudentGroupSelector = ({ onChange }) => {
     const handleFOSChange = event => {
         const facultyId = document.getElementById('faculty-select').value;
         const fosName = document.getElementById('fos-select').value.replace(/ /g, '%20');
-        console.log('facultyId:', facultyId);
-        console.log('fosName:', fosName);
 
         if (!fosName) {
             setYears([]);
@@ -68,7 +66,7 @@ const StudentGroupSelector = ({ onChange }) => {
 
         axios.get(`/get_year/${facultyId}/${fosName}`)
             .then(response => {
-                setYears(response.data.map(year => ({ value: year.year, label: year.year })));
+                setYears(response.data.map(year => ({value: year.year, label: year.year})));
                 setLoading(false);
             })
             .catch(error => {
@@ -137,13 +135,12 @@ const StudentGroupSelector = ({ onChange }) => {
         const fosName = document.getElementById('fos-select').value.replace(/ /g, '%20');
         const yearNumber = document.getElementById('year-select').value;
         const specialisationName = document.getElementById('specialisation-select').value;
-        console.log('stationaryValue:', stationaryValue);
 
         setLoading(true);
         axios
             .get(`/get_spec_group/${facultyId}/${fosName}/${yearNumber}/${specialisationName}/${stationaryValue}`)
             .then(response => {
-                const specGroupsData = response.data.map(item => ({ value: item.spec_group, label: item.spec_group }));
+                const specGroupsData = response.data.map(item => ({value: item.spec_group, label: item.spec_group}));
                 setSpecGroups(specGroupsData);
 
                 setLoading(false);
@@ -157,30 +154,24 @@ const StudentGroupSelector = ({ onChange }) => {
     const handleSpecGroupChange = event => {
 
         const facultyId = document.getElementById('faculty-select').value;
-        console.log('facultyId:', facultyId);
         const fosName = document.getElementById('fos-select').value.replace(/ /g, '%20');
-        console.log('fosName:', fosName);
         const yearNumber = document.getElementById('year-select').value;
-        console.log('yearNumber:', yearNumber);
         const specialisationName = document.getElementById('specialisation-select').value;
-        console.log('specialisationName:', specialisationName);
-        console.log('isStationarySelected:', isStationarySelected);
         const stationaryName = isStationarySelected ? 1 : 0;
-        console.log('stationaryName:', stationaryName);
         const specGroupName = event.target.value;
 
         if (!specGroupName) {
             setGroups([]);
             return;
         }
-        console.log(`/get_group/${facultyId}/${fosName}/${yearNumber}/${specialisationName}/${specGroupName}/${stationaryName}`);
 
         setLoading(true);
         axios
             .get(`/get_group/${facultyId}/${fosName}/${yearNumber}/${specialisationName}/${stationaryName}/${specGroupName}`)
             .then(response => {
-                setGroups(response.data);
+                setGroups(response.data[0].id_group);
                 setLoading(false);
+                onChange(response.data[0].id_group);
             })
             .catch(error => {
                 console.log(error);
@@ -266,20 +257,6 @@ const StudentGroupSelector = ({ onChange }) => {
                         {specGroups.map(specGroup => (
                             <option key={specGroup.value} value={specGroup.value}>
                                 {specGroup.label}
-                            </option>
-                        ))}
-                    </select>
-                    {loading}
-                </>
-            )}
-            {groups.length > 0 && (
-                <>
-                    <label className={'text-gray-300'} htmlFor="group-select">Group:</label>
-                    <select className={'dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm '} id="group-select">
-                        <option value="">Select group</option>
-                        {groups.map(group =>  (
-                            <option key={group.id_group} value={group.group_name}>
-                                {group.group_name}
                             </option>
                         ))}
                     </select>
