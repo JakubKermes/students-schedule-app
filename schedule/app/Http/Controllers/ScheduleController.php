@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Classroom;
 use App\Models\Lecturer;
 use App\Models\LectureSchedule;
 use App\Models\Legend;
@@ -31,7 +32,10 @@ class ScheduleController extends Controller
             $lecturer = Lecturer::where('id_lecturer', $item->id_lecturer)->first();
             $item->lecturer_name = $lecturer->name . ' ' . $lecturer->lastname;
 
+            $classroom = Classroom::where('id_room', $item->id_room)->first();
+            $item->classroom = $classroom->building . $classroom->room_number;
         }
+
 
         $response_data = [
             'schedule' => $schedule,

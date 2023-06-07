@@ -1,4 +1,3 @@
-
 <?php
 
 ini_set('max_execution_time', 1000);
@@ -16,14 +15,13 @@ $scraper = new URLScraper('http://www.plan.collegiumwitelona.pl/');
 $urls = $scraper->getAllURLs();
 
 foreach ($urls as $url) {
-//    echo $url . PHP_EOL;
     if (strpos($url, 'checkSpecjalnoscStac') === false) {
         continue;
     }
-    if(strpos($url, "%A3")){
+    if (strpos($url, "%A3")) {
         $url = str_replace("%A3", "Ł", $url);
     }
-    if(strpos($url, "%AC")){
+    if (strpos($url, "%AC")) {
         $url = str_replace("%AC", "Ź", $url);
     }
     $specialisation = explode('=', $url)[1];
@@ -74,10 +72,9 @@ foreach ($urls as $url) {
 
                     $subject = explode(' ', $test[0])[0];
 
-                    $pattern = '/\((.*?)\)/'; // pattern to match text inside parentheses
-                    preg_match($pattern, $test[0], $matches); // search for pattern in $test[0]
-                    $type = isset($matches[1]) ? $matches[1] : ''; // assign the matched string to $type or an empty string if no match is found
-
+                    $pattern = '/\((.*?)\)/';
+                    preg_match($pattern, $test[0], $matches);
+                    $type = isset($matches[1]) ? $matches[1] : '';
 
                     $date = explode(' ', $day[$k])[1];
 
@@ -87,7 +84,7 @@ foreach ($urls as $url) {
                     $building = substr($test2[0], 0, 1);
                     $classroom = substr($test2[0], 1);
 
-                    if ($building === '-' && $classroom === '-') {
+                    if ($building === '-' || $classroom === '-') {
                         continue;
                     }
 
@@ -118,7 +115,6 @@ foreach ($urls as $url) {
                     $group = substr($nazwaSpecjalnosci[$i], $specialisation_length + 2);
 
 
-
                     $event = [
                         'date' => $date,
                         'time_start' => $time_start,
@@ -142,7 +138,7 @@ foreach ($urls as $url) {
                     }
 
 
-                    if(str_contains($event['lecturer_name'], "Legenda")){
+                    if (str_contains($event['lecturer_name'], "Legenda")) {
                         $event['lecturer_lastname'] = substr($event['lecturer_name'], 7);
                         $event['lecturer_name'] = "Legenda";
 
@@ -167,7 +163,6 @@ foreach ($urls as $url) {
                         ->first();
 
 
-
                     $existing_lecturer = Lecturer::where('name', $event['lecturer_name'])
                         ->where('lastname', $event['lecturer_lastname'])
                         ->first();
@@ -180,7 +175,6 @@ foreach ($urls as $url) {
                             'id_faculty' => '6',
                         ]);
                     }
-                    echo $url . '<br>';
 
                     if ($existing_lecture_schedule === null) {
                         LectureSchedule::factory()->create([
@@ -267,7 +261,7 @@ function getLegends($table, $specialisation)
                 ->where('room_number', $legend['room_number'])
                 ->first();
 
-            if(!$existing_room){
+            if (!$existing_room) {
                 Classroom::factory()->create([
                     'building' => $legend['buiding'],
                     'room_number' => $legend['room_number'],
@@ -275,8 +269,7 @@ function getLegends($table, $specialisation)
             }
 
 
-            if(!$existing_legend){
-                echo $legend['lecturer_lastname'] ." | ". $legend['lecturer_firstname'] . '<br>';
+            if (!$existing_legend) {
                 Legend::factory()->create([
                     'legend_name' => $legend['Legend'],
                     'id_group' => $group_id['id_group'],
@@ -368,12 +361,12 @@ function clearName($name)
     $last_name = implode(' ', $name_array);
     $actual_titles = implode(' ', $titles_array);
 
-    if(strpos($name, 'Legenda')){
+    if (strpos($name, 'Legenda')) {
         $first_name = 'Legenda';
         $last_name = substr($first_name, 7);
     }
 
-    if(str_contains($last_name, "Barbara Cieślik")){
+    if (str_contains($last_name, "Barbara Cieślik")) {
         $first_name = "Barbara";
         $last_name = "Cieślik";
     }
